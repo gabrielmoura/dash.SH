@@ -50,12 +50,12 @@ ffmpeg -i ./"$separated"/video-700k.mp4 -i ./"$separated"/audio.aac -codec copy 
 
 echo -e "\033[1;32mGerando DASH com seletor de banda";
 
-MP4Box -dash 10000 -rap -dash-profile dashavc264:live -bs-switching no -url-template -segment-timeline -segment-name seg_$Bandwidth$_$Time$ ./"$separated"/video+a-2000k.mp4 ./"$separated"/video+a-1500k.mp4 /"$separated"/video+a-1000k.mp4 ./"$separated"/video+a-700k.mp4 -out "./$dash/manifest.mp4"
+MP4Box -dash 10000 -rap -dash-profile dashavc264:live -bs-switching no -url-template -segment-timeline -segment-name seg_$Bandwidth$_$Time$ ./"$separated"/video+a-2000k.mp4 ./"$separated"/video+a-1500k.mp4 ./"$separated"/video+a-1000k.mp4 ./"$separated"/video+a-700k.mp4 -out "./$dash/manifest.mp4"
 
 echo -e "\033[1;32mDASH gerado com sucesso em: $dash/manifest.dash\033[0m";
 echo -e "\033[1;32mRemovendo diretório $separated\033[0m";
 rm -rdf ./$separated
-fi #parametro 2 nulo
-fi #parametro -make
+fi #Fim parametro 2 nulo
+fi #Fim parametro -make
 
-fi #sem parametro
+fi #Fim sem parametro
