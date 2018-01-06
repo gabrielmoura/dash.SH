@@ -5,8 +5,8 @@ echo -e "\033[0;31mÉ necessário que tenha MP4Box da GPAC e ffmpeg instalado.\0
 #Sem parametro mensagem de ajuda
 if [ -z "$1" ];then
 echo -e "Abaixo esta os modos de uso disponiveis.\n";
-echo "Gerar DASH: ./convert.sh -make video.mp4";
-echo "Convert WEBM: ./convert.sh -webm video.mp4";
+echo "Gerar DASH: ./dash.sh -make video.mp4";
+echo "Converter WEBM: ./dash.sh -webm video.mp4";
 echo -e "\nPressione Ctrl+C a qualquer momento para cancelar.";
 else
 
@@ -41,21 +41,24 @@ ffmpeg -i $2 -an -c:v libx264 -preset veryslow -profile:v high -level 4.2 -b:v 1
    
 ffmpeg -i $2 -an -c:v libx264 -preset veryslow -profile:v high -level 4.2 -b:v 700k -minrate 700k -maxrate 700k -bufsize 1400k -g 96 -keyint_min 96 -sc_threshold 0 -filter:v "scale='trunc(oh*a/2)*2:288'" -pix_fmt yuv420p ./"$separated"/video-700k.mp4
 
+ffmpeg -i $2 -an -c:v libx264 -preset veryslow -profile:v high -level 4.2 -b:v 350k -minrate 350k -maxrate 350k -bufsize 700k -g 96 -keyint_min 96 -sc_threshold 0 -filter:v "scale='trunc(oh*a/2)*2:188'" -pix_fmt yuv420p ./"$separated"/video-350k.mp4
+
 echo -e "\033[1;32mIncluindo audio separadamente a cada vídeo convertido\033[0m";
 
 ffmpeg -i ./"$separated"/video-2000k.mp4 -i ./"$separated"/audio.aac -codec copy -shortest ./"$separated"/video+a-2000k.mp4
 ffmpeg -i ./"$separated"/video-1500k.mp4 -i ./"$separated"/audio.aac -codec copy -shortest ./"$separated"/video+a-1500k.mp4
 ffmpeg -i ./"$separated"/video-1000k.mp4 -i ./"$separated"/audio.aac -codec copy -shortest ./"$separated"/video+a-1000k.mp4
 ffmpeg -i ./"$separated"/video-700k.mp4 -i ./"$separated"/audio.aac -codec copy -shortest ./"$separated"/video+a-700k.mp4
+ffmpeg -i ./"$separated"/video-350k.mp4 -i ./"$separated"/audio.aac -codec copy -shortest ./"$separated"/video+a-350k.mp4
 
 echo -e "\033[1;32mGerando DASH com seletor de banda";
 
-MP4Box -dash 10000 -rap -dash-profile dashavc264:live -bs-switching no -url-template -segment-timeline -segment-name seg_$Bandwidth$_$Time$ ./"$separated"/video+a-2000k.mp4 ./"$separated"/video+a-1500k.mp4 ./"$separated"/video+a-1000k.mp4 ./"$separated"/video+a-700k.mp4 -out "./$dash/manifest.mp4"
+MP4Box -dash 10000 -rap -dash-profile dashavc264:live -bs-switching no -url-template -segment-timeline -segment-name seg_$Bandwidth$_$Time$ ./"$separated"/video+a-2000k.mp4 ./"$separated"/video+a-1500k.mp4 ./"$separated"/video+a-1000k.mp4 ./"$separated"/video+a-700k.mp4 ./"$separated"/video+a-350k.mp4 -out "./$dash/manifest.mp4"
 
 echo -e "\033[1;32mDASH gerado com sucesso em: $dash/manifest.dash\033[0m";
 echo -e "\033[1;32mRemovendo diretório $separated\033[0m";
 rm -rdf ./$separated
-fi #Fim parametro 2 nulo
+fi #Fim parametro $2 nulo
 fi #Fim parametro -make
 
-fi #Fim sem parametro
+fi #sem parametro
