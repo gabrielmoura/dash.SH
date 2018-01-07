@@ -5,10 +5,42 @@ echo -e "\033[0;31mÉ necessário que tenha MP4Box da GPAC e ffmpeg instalado.\0
 #Sem parametro mensagem de ajuda
 if [ -z "$1" ];then
 echo -e "Abaixo esta os modos de uso disponiveis.\n";
-echo "Gerar DASH: ./dash.sh -make video.mp4";
 echo "Converter WEBM: ./dash.sh -webm video.mp4";
+echo "Converter ALL: ./dash.sh -all video.mp4 (converte a maioria)";
+echo "Converter MKV: ./dash.sh -mkv video.mp4 (não codifica)";
+echo "Converter MKV: ./dash.sh -mkv2 video.mp4 (codifica|lossless)";
+echo -e "\nGerar DASH: ./dash.sh -make video.mp4";
 echo -e "\nPressione Ctrl+C a qualquer momento para cancelar.";
 else
+
+#Parametro -all
+if [ "$1" = "-all" ];then
+if [ -z "$2" ];then
+echo -e "\033[0;31mÉ necessário passar o video.\033[0m";
+else
+ffmpeg -i $2 -f mp4 -vcodec libx264 -preset fast -profile:v main -acodec aac ./output.mp4 -hide_banner
+fi
+fi #Fim do parametro -all
+
+#Parametro -mkv
+#Converte o vídeo de mkv para mp4 mudando poucas coisas sem codificar-lo
+if [ "$1" = "-mkv" ];then
+if [ -z "$2" ];then
+echo -e "\033[0;31mÉ necessário passar o video.\033[0m";
+else
+ffmpeg -i $2 -codec copy ./output.mp4
+fi
+fi #Fim do parametro -mkv
+
+#Parametro -mkv2
+#Converte o vídeo de mkv para mp4 o codificando.
+if [ "$1" = "-mkv2" ];then
+if [ -z "$2" ];then
+echo -e "\033[0;31mÉ necessário passar o video.\033[0m";
+else
+ffmpeg -i $2 -c:v libx265 -preset veryslow -x265-params lossless=1 ./output.mp4
+fi
+fi #Fim do parametro -mkv2
 
 #Parametro -webm
 if [ "$1" = "-webm" ];then
@@ -32,6 +64,7 @@ mkdir -p $dash
 ffmpeg -i $2 -vn ./"$separated"/audio.aac
 echo -e "\033[1;32mAudio extraido.\033[0m";
 
+#Usando veryslow por conseguir produzir um arquivo menor de qualidade maior.
 echo -e "\033[1;32mSeparando vídeos por tamanhos\033[0m";
 ffmpeg -i $2 -an -c:v libx264 -preset veryslow -profile:v high -level 4.2 -b:v 2000k -minrate 2000k -maxrate 2000k -bufsize 4000k -g 96 -keyint_min 96 -sc_threshold 0 -filter:v "scale='trunc(oh*a/2)*2:576'" -pix_fmt yuv420p ./"$separated"/video-2000k.mp4
 
