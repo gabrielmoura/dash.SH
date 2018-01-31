@@ -23,6 +23,27 @@ ffmpeg -i $2 -f mp4 -vcodec libx264 -preset fast -profile:v main -acodec aac ./o
 fi
 fi #Fim do parametro -all
 
+#Parametro -make3
+#Cria dash de webm sem usar o MP4BOX
+if [ "$1" = "-make3" ];then
+if [ -z "$2" ];then
+echo -e "\033[0;31mÉ necessário passar o video.\033[0m";
+else
+ffmpeg -i $2 -c:v libvpx -s 160x90 -threads 4 -b:v 25k -tile-columns 4 -frame-parallel 1 -an -keyint_min 30 -g 30 -f webm video_160x90_25k.webm
+
+ffmpeg -i $2 -c:v libvpx -s 160x90 -threads 4 -b:v 50k -tile-columns 4 -frame-parallel 1 -an -keyint_min 30 -g 30 -f webm video_160x90_50k.webm
+#Separando audio
+ffmpeg -i $2 -vn -acodec libvorbis -ab 128k audio_128k.webm
+
+sample_muxer -i video_160x90_25k.webm -o video_160x90_25k_cued.webm
+sample_muxer -i video_160x90_50k.webm -o video_160x90_50k_cued.webm
+
+ffmpeg -i audio_128k.webm -vn -acodec libvorbis -ab 128k -dash 1 audio_128k_cued.webm
+
+ffmpeg -f webm_dash_manifest -i video_160x90_25k_cued.webm -f webm_dash_manifest -i video_160x90_50k_cued.webm -f webm_dash_manifest -i audio_128k_cued.webm -c copy -map 0 -map 1 -map 2 -f webm_dash_manifest -adaptation_sets "id=0,streams=0,1 id=1,streams=2" manifest.mpd
+fi
+fi #Fim do parametro -make3
+
 #Parametro -mkv
 #Converte o vídeo de mkv para mp4 mudando poucas coisas sem codificar-lo
 if [ "$1" = "-mkv" ];then
